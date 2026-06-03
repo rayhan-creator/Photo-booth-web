@@ -1,0 +1,6 @@
+{
+  "name": "Time-Travel Photo Booth",
+  "description": "Step into history! Take a real photo or upload a portrait, select from multiple immersive timelines, and let our quantum overlay canvas and Gemini-powered temporal scans generate your historic adventure story.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
