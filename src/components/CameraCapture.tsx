@@ -29,6 +29,18 @@ export default function CameraCapture({ onPhotoSelected, selectedPhoto }: Camera
     };
   }, [mode]);
 
+  // Sync camera stream with the video element, ensuring it survives rendering cycles
+  useEffect(() => {
+    if (mode === 'camera' && cameraStream && videoRef.current) {
+      if (videoRef.current.srcObject !== cameraStream) {
+        videoRef.current.srcObject = cameraStream;
+      }
+      videoRef.current.play().catch(e => {
+        console.warn("Video playback was interrupted or delayed:", e);
+      });
+    }
+  }, [cameraStream, mode, isCapturing]);
+
   const startCamera = async () => {
     setCameraError(null);
     setIsCapturing(true);
@@ -217,38 +229,40 @@ export default function CameraCapture({ onPhotoSelected, selectedPhoto }: Camera
         {/* 1. WEBCAM INTERFACE */}
         {mode === 'camera' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-            {isCapturing ? (
-              <div className="flex flex-col items-center gap-3">
-                <RefreshCw className="w-8 h-8 text-amber-500 animate-spin" />
-                <p className="text-xs font-mono text-amber-400">CONNECTING TEMPORAL LENS...</p>
-              </div>
-            ) : (
-              <div className="relative w-full h-full flex flex-col items-center justify-between">
-                <div className="relative flex-1 w-full max-w-sm rounded-xl border border-amber-900/30 overflow-hidden">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover scale-x-[-1]"
-                  />
-                  <div className="absolute inset-0 border-2 border-dashed border-amber-500/20 pointer-events-none rounded-xl m-4 flex items-center justify-center">
-                    <div className="w-48 h-48 border border-dashed border-amber-500/40 rounded-full flex items-center justify-center viewfinder-crosshair">
-                      <p className="text-[9px] font-mono tracking-widest text-amber-450/75 mb-2">ALIGN FACE</p>
-                    </div>
+            <div className="relative w-full h-full flex flex-col items-center justify-between">
+              <div className="relative flex-1 w-full max-w-sm rounded-xl border border-amber-900/30 overflow-hidden bg-[#0c0b0a] flex items-center justify-center">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover scale-x-[-1]"
+                />
+                
+                {isCapturing && (
+                  <div className="absolute inset-0 bg-[#0c0b0a] flex flex-col items-center justify-center gap-3 z-10">
+                    <RefreshCw className="w-8 h-8 text-amber-500 animate-spin" />
+                    <p className="text-xs font-mono text-amber-400 text-center">CONNECTING TEMPORAL LENS...</p>
+                  </div>
+                )}
+
+                <div className="absolute inset-0 border-2 border-dashed border-amber-500/20 pointer-events-none rounded-xl m-4 flex items-center justify-center z-10">
+                  <div className="w-48 h-48 border border-dashed border-amber-500/40 rounded-full flex items-center justify-center viewfinder-crosshair">
+                    <p className="text-[9px] font-mono tracking-widest text-amber-450/75 mb-2">ALIGN FACE</p>
                   </div>
                 </div>
-
-                <button
-                  onClick={captureSnapshot}
-                  className="mt-4 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold uppercase tracking-wider text-xs rounded-xl shadow-lg shadow-amber-500/10 flex items-center gap-2 transition-all self-center cursor-pointer"
-                  id="btn-take-photo"
-                >
-                  <Camera className="w-4.5 h-4.5 stroke-[2.5]" />
-                  Capture Signature
-                </button>
               </div>
-            )}
+
+              <button
+                onClick={captureSnapshot}
+                disabled={isCapturing}
+                className="mt-4 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold uppercase tracking-wider text-xs rounded-xl shadow-lg shadow-amber-500/10 flex items-center gap-2 transition-all self-center cursor-pointer disabled:opacity-50"
+                id="btn-take-photo"
+              >
+                <Camera className="w-4.5 h-4.5 stroke-[2.5]" />
+                Capture Signature
+              </button>
+            </div>
           </div>
         )}
 
